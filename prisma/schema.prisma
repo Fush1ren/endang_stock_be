@@ -1,0 +1,258 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+enum StatusProduct {
+    available
+    lowStock
+    outOfStock
+}
+
+enum StatusTransaction {
+    pending
+    completed
+}
+
+model Role {
+    id_role   Int   @id @default(autoincrement()) @db.Integer
+    name      String @unique @db.VarChar(25)
+    permissions Json      @db.Json
+    createdAt DateTime @default(now()) @db.Timestamptz()
+    updatedAt DateTime @updatedAt @db.Timestamptz()
+
+    users     User[]   @relation("RoleUsers")
+    @@map("role")
+}
+
+model User {
+    id_user   Int   @id @default(autoincrement()) @db.Integer
+    name      String @db.VarChar(50)
+    username  String @unique @db.VarChar(15)
+    email     String @unique @db.VarChar(50)
+    password  String @db.VarChar(100)
+    photo     String? @db.Text
+
+    createdAt DateTime @default(now()) @db.Timestamptz()
+    updatedAt DateTime @updatedAt @db.Timestamptz()
+
+    id_role   Int? @db.Integer
+
+    stockIn StockIn[]
+    stockOut StockOut[]
+    stockMutation StockMutation[]
+    roles Role? @relation("RoleUsers", fields: [id_role], references: [id_role], onDelete: SetNull)
+    @@map("user")
+}
+
+model Store {
+    id_store       Int   @id @default(autoincrement()) @db.Integer
+    name      String @db.VarChar(25)
+    createdAt DateTime @default(now()) @db.Timestamptz()
+    updatedAt DateTime @updatedAt @db.Timestamptz()
+
+    StoreStock StoreStock[]
+    StockIn StockIn[]
+    StockOut StockOut[]
+    fromStore StockMutation[] @relation("fromStore")
+    toStore StockMutation[] @relation("toStore")
+
+    @@map("store")
+}
+
+model Unit {
+    id_unit        Int   @id @default(autoincrement()) @db.Integer
+    name      String @db.VarChar(25)
+
+    createdAt DateTime @default(now()) @db.Timestamptz()
+    updatedAt DateTime @updatedAt @db.Timestamptz()
+
+    Products Product[]
+    @@map("unit")
+}
+
+model Brand {
+    id_brand        Int   @id @default(autoincrement()) @db.Integer
+    name      String @db.VarChar(30)
+    
+    createdAt DateTime @default(now()) @db.Timestamptz()
+    updatedAt DateTime @updatedAt @db.Timestamptz()
+
+    Products Product[]
+    @@map("brand")
+}
+
+model Category {
+    id_category  Int   @id @default(autoincrement()) @db.Integer
+    name      String @db.VarChar(100)
+    
+    createdAt DateTime @default(now()) @db.Timestamptz()
+    updatedAt DateTime @updatedAt @db.Timestamptz()
+
+    Products Product[]
+    @@map("category")
+}
+
+model Product {
+    id_product  Int   @id @default(autoincrement()) @db.Integer
+    name      String @db.VarChar(100)
+
+    code String @unique @db.VarChar(30)
+    threshold Int @default(0) @db.Integer
+    description String? @db.Text
+    createdAt DateTime @default(now()) @db.Timestamptz()
+    updatedAt DateTime @updatedAt @db.Timestamptz()
+
+    id_unit Int? @db.Integer
+
+    id_category Int? @db.Integer
+    id_brand Int? @db.Integer
+
+    unit Unit? @relation(fields: [id_unit], references: [id_unit], onDelete: SetNull)
+    category Category? @relation(fields: [ id_category], references: [id_category], onDelete: SetNull)
+    brand Brand? @relation(fields: [id_brand], references: [id_brand], onDelete: SetNull)
+
+    Stock StoreStock[]
+    StockInDetail StockInDetail[]
+    StockOutDetail StockOutDetail[]
+    StockMutationDetail StockMutationDetail[]
+    WareHouseStock WareHouseStock[]
+    @@map("product")
+}
+
+model StoreStock {
+    id_store_stock Int   @id @default(autoincrement()) @db.Integer
+    quantity  Int   @db.Integer
+    status    StatusProduct
+    createdAt DateTime @default(now()) @db.Timestamptz()
+    updatedAt DateTime @updatedAt @db.Timestamptz()
+
+    id_product Int @db.Integer
+    id_store Int @db.Integer
+
+    store Store @relation(fields: [id_store], references: [id_store], onDelete: Cascade)
+    product Product @relation(fields: [id_product], references: [id_product])
+
+    @@unique([id_store, id_product])
+    @@map("stock")
+}
+
+model WareHouseStock {
+    id_warehouse_stock  Int   @id @default(autoincrement()) @db.Integer
+    quantity  Int   @db.Integer
+    status StatusProduct
+    createdAt DateTime @default(now()) @db.Timestamptz()
+    updatedAt DateTime @updatedAt @db.Timestamptz()
+
+    id_product Int @db.Integer
+
+    product Product @relation(fields: [id_product], references: [id_product])
+
+    @@map("warehouse_stock")
+}
+
+model StockIn {
+    id_stock_in        Int   @id @default(autoincrement()) @db.Integer
+    transactionCode String @unique @db.VarChar(10)
+    status    StatusTransaction @default(pending)
+    date      DateTime @db.Timestamptz()
+    createdAt DateTime @default(now()) @db.Timestamptz()
+    updatedAt DateTime @updatedAt @db.Timestamptz()
+    toWarehouse Boolean @default(false)
+
+    id_user Int? @db.Integer
+    id_store Int? @db.Integer
+
+    StockInDetail StockInDetail[]
+
+    toStore Store? @relation(fields: [id_store], references: [id_store], onDelete: Cascade)
+    user User? @relation(fields: [id_user], references: [id_user], onDelete: SetNull)
+
+    @@map("stock_in")
+}
+
+model StockInDetail {
+    id_stock_in_detail        Int   @id @default(autoincrement()) @db.Integer
+    quantity  Int   @db.Integer
+
+    id_stock_in Int @db.Integer
+    id_product Int @db.Integer
+
+    stockIn StockIn @relation(fields: [id_stock_in], references: [id_stock_in], onDelete: Cascade)
+    product Product @relation(fields: [id_product], references: [id_product])
+
+    @@map("stock_in_detail")
+}
+
+model StockOut {
+    id_stock_out        Int   @id @default(autoincrement()) @db.Integer
+    transactionCode String @unique @db.VarChar(10)
+    status    StatusTransaction @default(pending)
+    date      DateTime @db.Timestamptz()
+    createdAt DateTime @default(now()) @db.Timestamptz()
+    updatedAt DateTime @updatedAt @db.Timestamptz()
+
+    id_store Int @db.Integer
+    id_user Int? @db.Integer
+
+    StockOutDetail StockOutDetail[]
+
+    fromStore Store @relation(fields: [id_store], references: [id_store], onDelete: Cascade)
+    user User? @relation(fields: [id_user], references: [id_user], onDelete: SetNull)
+
+    @@map("stock_out")
+}
+
+model StockOutDetail {
+    id_stock_out_detail        Int   @id @default(autoincrement()) @db.Integer
+    quantity  Int   @db.Integer
+
+    id_stock_out Int @db.Integer
+    id_product Int @db.Integer
+
+    stockOut StockOut @relation(fields: [id_stock_out], references: [id_stock_out], onDelete: Cascade)
+    product Product @relation(fields: [id_product], references: [id_product])
+
+    @@map("stock_out_detail")
+}
+
+model StockMutation {
+    id_stock_mutation        Int   @id @default(autoincrement()) @db.Integer
+    transactionCode String @unique @db.VarChar(10)
+    status    StatusTransaction @default(pending)
+    date      DateTime @db.Timestamptz()
+    fromWarehouse Boolean @default(false)
+    createdAt DateTime @default(now()) @db.Timestamptz()
+    updatedAt DateTime @updatedAt @db.Timestamptz()
+
+    id_from_store Int? @db.Integer
+
+    id_to_store Int @db.Integer
+    id_user Int? @db.Integer
+
+    StockMutationDetail StockMutationDetail[]
+
+    fromStore Store? @relation("fromStore", fields: [ id_from_store], references: [id_store], onDelete: Cascade)
+    toStore Store @relation("toStore", fields: [ id_to_store], references: [id_store], onDelete: Cascade)
+    user User? @relation(fields: [id_user], references: [id_user], onDelete: SetNull)
+
+    @@map("stock_mutation")
+}
+
+model StockMutationDetail {
+    id_stock_mutation_detail  Int   @id @default(autoincrement()) @db.Integer
+    quantity  Int   @db.Integer
+
+    id_stock_mutation Int @db.Integer
+    id_product Int @db.Integer
+
+    stockMutation StockMutation @relation(fields: [id_stock_mutation], references: [id_stock_mutation], onDelete: Cascade)
+    product Product @relation(fields: [id_product], references: [id_product])
+
+    @@map("stock_mutation_detail")
+}
