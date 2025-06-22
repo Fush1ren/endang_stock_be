@@ -37,7 +37,7 @@ const uploadToSupabaseStorage = async (file: Express.Multer.File, username: stri
 
 const deleteFromSupabaseStorage = async (avatarUrl: string): Promise<void> => {
     try {
-       const publicPrefix = '/storage/v1/object/public/';
+        const publicPrefix = '/storage/v1/object/public/';
         const startIndex = avatarUrl.indexOf(publicPrefix);
         if (startIndex === -1) return;
 
@@ -400,11 +400,25 @@ export const getUserById = async (req: Request, res: Response) => {
                 message: 'User not found',
             });
         }
+        
+        const data = {
+            id: user.id_user,
+            name: user.name,
+            username: user.username,
+            email: user.email,
+            photo: user.photo,
+            createdAt: user.createdAt,
+            updatedAt: user.updatedAt,
+            roles: user.roles ? {
+                id: user.roles.id_role,
+                name: user.roles.name,
+            }: null,
+        }
 
         responseAPIData(res, {
             status: 200,
             message: 'User retrieved successfully',
-            data: user,
+            data: data,
         });
     } catch (error) {
         responseAPI(res, {
@@ -496,6 +510,12 @@ export const updateUser = async (req: Request, res: Response) => {
                 await deleteFromSupabaseStorage(existingUser.photo);
             }
             avatarUrl = await uploadToSupabaseStorage(req.file, existingUser.username);
+        } else {
+            if(existingUser.photo) {
+                await deleteFromSupabaseStorage(existingUser.photo);
+                avatarUrl = undefined;
+            }
+            avatarUrl = undefined;
         }
 
 
@@ -506,7 +526,7 @@ export const updateUser = async (req: Request, res: Response) => {
                 username: body.username,
                 email: body.email,
                 password: body.password,
-                photo: avatarUrl || existingUser.photo, // Keep the existing photo if not updated
+                photo: avatarUrl || null,
                 roles: {
                     connect: {
                         id_role: Number(body.role),
@@ -622,10 +642,22 @@ export const getUserProfile = async (req: Request, res: Response) => {
             });
         }
 
+        const data = {
+            id: userProfile.id_user,
+            name: userProfile.name,
+            username: userProfile.username,
+            email: userProfile.email,
+            photo: userProfile.photo,
+            roles: userProfile.roles ? {
+                id: userProfile.roles.id_role,
+                name: userProfile.roles.name,
+            } : null,
+        }
+
         responseAPIData(res, {
             status: 200,
             message: 'User profile retrieved successfully',
-            data: userProfile,
+            data: data,
         });
     } catch (error) {
         responseAPI(res, {
@@ -691,6 +723,12 @@ export const updateUserProfile = async (req: Request, res: Response) => {
                 await deleteFromSupabaseStorage(existingUser.photo);
             }
             avatarUrl = await uploadToSupabaseStorage(req.file, existingUser.username);
+        } else {
+            if (existingUser.photo) {
+                await deleteFromSupabaseStorage(existingUser.photo);
+                avatarUrl = undefined;
+            }
+            avatarUrl = undefined;
         }
 
         if (body.password) {
@@ -713,7 +751,7 @@ export const updateUserProfile = async (req: Request, res: Response) => {
                 username: body.username,
                 email: body.email,
                 password: body.password,
-                photo: avatarUrl || existingUser.photo,
+                photo: avatarUrl || null,
             }
         });
 

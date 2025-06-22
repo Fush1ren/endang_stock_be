@@ -16,7 +16,6 @@ export const verifyToken = (req: UserRequest, res: Response, next: NextFunction)
 
   try {
     const decoded = verifyAccessToken(token) as user;
-     console.log('Refresh token payload:', decoded);
     req.user = decoded;
     next();
   } catch (error: any) {

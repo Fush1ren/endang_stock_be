@@ -8,7 +8,6 @@ export function registerSocket(server: Server) {
   io = server;
   io.on("connection", async (socket) => {
     const notification = await notificationStockLinearLength() as StockNotification;
-    // const notification = {} as StockNotification;
     emitStockNotificationLength(notification);
 
     socket.on('disconnect', () => {

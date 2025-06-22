@@ -6,8 +6,6 @@ import http from 'http';
 import { Server } from 'socket.io';
 import { registerSocket } from './api/socket/socketInstance';
 import cookieParser from 'cookie-parser';
-// import { notificationStockLinearLength } from './api/v1/stock/stock.service';
-// import { StockNotification } from './types/stock.type';
 
 const app = express();
 
@@ -40,20 +38,6 @@ app.get('/', (_req, res) => {
 registerSocket(io);
 
 app.use('/api/v1', apiV1);
-
-// io.on('connection', async (socket) => {
-//   console.log('a user connected');
-//   const notification = await notificationStockLinearLength() as StockNotification;
-//   io.emit('message', notification);
-
-//   socket.on('disconnect', () => {
-//     console.log('user disconnected');
-//   });
-// });
-
-// app.listen(3000, () => {
-//     console.log(`Backend stock app listening on port ${config.portApi}`);
-// });
 
 server.listen(3000, () => {
   console.log(`Backend + Socket.IO listening on port ${config.portApi}`);

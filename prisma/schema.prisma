@@ -47,6 +47,8 @@ model User {
     stockOut StockOut[]
     stockMutation StockMutation[]
     roles Role? @relation("RoleUsers", fields: [id_role], references: [id_role], onDelete: SetNull)
+
+    @@unique([username, email])
     @@map("user")
 }
 
@@ -153,6 +155,7 @@ model WareHouseStock {
 
     product Product @relation(fields: [id_product], references: [id_product])
 
+    @@unique([id_product])
     @@map("warehouse_stock")
 }
 

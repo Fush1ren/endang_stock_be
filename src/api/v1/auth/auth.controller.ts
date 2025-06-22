@@ -114,7 +114,6 @@ export const userLogin = async (req: Request, res: Response) => {
 
 export const refreshAccessToken = async (req: Request, res: Response) => {
     const token = req?.cookies?.refreshToken;
-    console.log("REFRESH TOKEN:", token);
     if (!token) {
         responseAPI(res, {
             status: 400,
