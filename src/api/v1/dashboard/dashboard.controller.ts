@@ -162,6 +162,15 @@ export const getDashboardMinimumStock = async (_req: Request, res: Response) => 
                 });
             }
 
+            if (warehouseStock && warehouseStock.status === 'outOfStock') {
+                lowStock.push({
+                    codeProduct: warehouseStock.product.code,
+                    brand: warehouseStock.product.brand?.name,
+                    productName: warehouseStock.product.name,
+                    location: "Warehouse",
+                    quantity: 0, // Assuming out of stock means quantity is 0
+            });
+
             for (const store of storeStock) {
                 if (store.status === 'lowStock') {
                     lowStock.push({
@@ -172,6 +181,16 @@ export const getDashboardMinimumStock = async (_req: Request, res: Response) => 
                         quantity: store.quantity,
                     });
                 }
+                if (store.status === 'outOfStock') {
+                    lowStock.push({
+                        codeProduct: store.product.code,
+                        brand: store.product.brand?.name,
+                        productName: store.product.name,
+                        location: store.store.name,
+                        quantity: 0, // Assuming out of stock means quantity is 0
+                    });
+                }
+            }
             }
         }
         lowStock?.map((item, index) => {

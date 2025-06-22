@@ -141,7 +141,7 @@ model StoreStock {
     product Product @relation(fields: [id_product], references: [id_product])
 
     @@unique([id_store, id_product])
-    @@map("stock")
+    @@map("store_stock")
 }
 
 model WareHouseStock {
