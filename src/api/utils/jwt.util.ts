@@ -7,7 +7,8 @@ const refreshSecret = config.refreshTokenSecret!;
 
 export function generateAccessToken(payload: PayloadGenerateToken) {
   return jwt.sign(payload, accessSecret, {
-    expiresIn: '15m',
+    expiresIn: '1d',
+    // expiresIn: '15m',
   });
 }
 
