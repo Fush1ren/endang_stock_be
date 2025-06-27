@@ -85,133 +85,130 @@ export const getDashboardTotalData = async (_req: Request, res: Response) => {
 }
 
 export const getDashboardMinimumStock = async (_req: Request, res: Response) => {
-    try {
-        const products = await prismaClient.product.findMany({
-            select: {
-                id_product: true,
+  try {
+    const products = await prismaClient.product.findMany({
+      select: {
+        id_product: true,
+        name: true,
+        threshold: true,
+      },
+    });
+
+    const warehouseStocks = await prismaClient.wareHouseStock.findMany({
+      select: {
+        id_warehouse_stock: true,
+        product: {
+          select: {
+            id_product: true,
+            name: true,
+            threshold: true,
+            code: true,
+            brand: {
+              select: {
                 name: true,
-                threshold: true,
-            }
-        });
-
-        const warehouseStocks = await prismaClient.wareHouseStock.findMany({
-            select: {
-                id_warehouse_stock: true,
-                product: {
-                    select: {
-                        id_product: true,
-                        name: true,
-                        threshold: true,
-                        code: true,
-                        brand: {
-                            select: {
-                                name: true,
-                            }
-                        }
-                    }
-                },
-                status: true,
-                quantity: true,
-            }
-        });
-
-        const storeStocks = await prismaClient.storeStock.findMany({
-            select: {
-                id_store_stock: true,
-                product: {
-                    select: {
-                        id_product: true,
-                        name: true,
-                        threshold: true,
-                        code: true,
-                        brand: {
-                            select: {
-                                name: true,
-                            }
-                        }
-                    }
-                },
-                store: {
-                    select: {
-                        name: true,
-                    }
-                },
-                status: true,
-                quantity: true,
-            }
-        });
-        let lowStock = [] as {
-            id?: number;
-            codeProduct: string;
-            brand?: string;
-            productName: string;
-            location: string;
-            quantity: number;
-        }[];
-        for (const product of products) {
-            const warehouseStock = warehouseStocks.find(stock => stock.product.id_product === product.id_product);
-            const storeStock = storeStocks.filter(stock => stock.product.id_product === product.id_product);
-
-            if (warehouseStock && warehouseStock.status === 'lowStock') {
-                lowStock.push({
-                    codeProduct: warehouseStock.product.code,
-                    brand: warehouseStock.product.brand?.name,
-                    productName: warehouseStock.product.name,
-                    location: "Warehouse",
-                    quantity: warehouseStock.quantity,
-                });
-            }
-
-            if (warehouseStock && warehouseStock.status === 'outOfStock') {
-                lowStock.push({
-                    codeProduct: warehouseStock.product.code,
-                    brand: warehouseStock.product.brand?.name,
-                    productName: warehouseStock.product.name,
-                    location: "Warehouse",
-                    quantity: 0, // Assuming out of stock means quantity is 0
-            });
-
-            for (const store of storeStock) {
-                if (store.status === 'lowStock') {
-                    lowStock.push({
-                        codeProduct: store.product.code,
-                        brand: store.product.brand?.name,
-                        productName: store.product.name,
-                        location: store.store.name,
-                        quantity: store.quantity,
-                    });
-                }
-                if (store.status === 'outOfStock') {
-                    lowStock.push({
-                        codeProduct: store.product.code,
-                        brand: store.product.brand?.name,
-                        productName: store.product.name,
-                        location: store.store.name,
-                        quantity: 0, // Assuming out of stock means quantity is 0
-                    });
-                }
-            }
-            }
-        }
-        lowStock?.map((item, index) => {
-            item.id = index + 1; // Assigning a unique ID for each low stock item
-            return item;
-        })
-        responseAPITable(res, {
-            status: 200,
-            message: "Dashboard minimum stock data retrieved successfully",
-            data: {
-                totalRecords: lowStock.length,
-                data: lowStock,
+              },
             },
-        });
-    } catch (error) {
-        responseAPI(res, {
-            status: 500,
-            message: "Internal Server Error",
-        });
+          },
+        },
+        status: true,
+        quantity: true,
+      },
+    });
+
+    const storeStocks = await prismaClient.storeStock.findMany({
+      select: {
+        id_store_stock: true,
+        product: {
+          select: {
+            id_product: true,
+            name: true,
+            threshold: true,
+            code: true,
+            brand: {
+              select: {
+                name: true,
+              },
+            },
+          },
+        },
+        store: {
+          select: {
+            name: true,
+          },
+        },
+        status: true,
+        quantity: true,
+      },
+    });
+
+    let lowStock: {
+      id?: number;
+      codeProduct: string;
+      brand?: string;
+      productName: string;
+      location: string;
+      quantity: number;
+    }[] = [];
+
+    for (const product of products) {
+      const warehouseStock = warehouseStocks.find(
+        (stock) => stock.product.id_product === product.id_product
+      );
+      const relatedStoreStocks = storeStocks.filter(
+        (stock) => stock.product.id_product === product.id_product
+      );
+
+      // Warehouse stock check
+      if (warehouseStock) {
+        if (warehouseStock.status === "lowStock" || warehouseStock.status === "outOfStock") {
+          lowStock.push({
+            codeProduct: warehouseStock.product.code,
+            brand: warehouseStock.product.brand?.name,
+            productName: warehouseStock.product.name,
+            location: "Warehouse",
+            quantity:
+              warehouseStock.status === "outOfStock" ? 0 : warehouseStock.quantity,
+          });
+        }
+      }
+
+      // Store stock check
+      for (const store of relatedStoreStocks) {
+        if (store.status === "lowStock" || store.status === "outOfStock") {
+          lowStock.push({
+            codeProduct: store.product.code,
+            brand: store.product.brand?.name,
+            productName: store.product.name,
+            location: store.store.name,
+            quantity: store.status === "outOfStock" ? 0 : store.quantity,
+          });
+        }
+      }
     }
-}
+
+    // Tambahkan ID unik untuk masing-masing item
+    lowStock = lowStock.map((item, index) => ({
+      ...item,
+      id: index + 1,
+    }));
+
+    responseAPITable(res, {
+      status: 200,
+      message: "Dashboard minimum stock data retrieved successfully",
+      data: {
+        totalRecords: lowStock.length,
+        data: lowStock,
+      },
+    });
+  } catch (error) {
+    console.error(error); // Tambahkan log error untuk debugging
+    responseAPI(res, {
+      status: 500,
+      message: "Internal Server Error",
+    });
+  }
+};
+
 
 export const getStockInChartDataProduct = async (req: Request, res: Response) => {
   try {

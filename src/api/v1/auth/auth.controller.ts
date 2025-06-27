@@ -5,7 +5,6 @@ import { BodyUserLogin } from '../../dto'
 import { prismaClient } from '../../config'
 import { UserLoginResponse } from '../../types/auth.type'
 import { generateAccessToken, verifyRefreshToken } from '../../utils/jwt.util'
-// import { generateAccessToken, generateRefreshToken, verifyRefreshToken } from '../../utils/jwt.util'
 
 export const userLogin = async (req: Request, res: Response) => {
     try {
@@ -73,11 +72,6 @@ export const userLogin = async (req: Request, res: Response) => {
             username: user?.username as string,
         });
 
-        // const refreshToken = generateRefreshToken({
-        //     id: user?.id_user as number,
-        //     username: user?.username as string,
-        // });
-
         let data: UserLoginResponse = {
             id: user?.id_user as number,
             name: user?.name as string,
@@ -90,17 +84,7 @@ export const userLogin = async (req: Request, res: Response) => {
             },
             permissions: user?.roles?.permissions as any,
             accessToken: accessToken,
-            // refreshToken: refreshToken,
         }
-
-        // res.cookie('refreshToken', refreshToken, {
-        //     httpOnly: true,
-        //     secure: process.env.NODE_ENV === 'production',
-        //     sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
-        //     path: '/',
-        //     maxAge: 7 * 24 * 60 * 60 * 1000,
-        // });
-
         responseAPIData(res, {
             status: 200,
             message: 'Login successfully',
@@ -115,7 +99,6 @@ export const userLogin = async (req: Request, res: Response) => {
 }
 
 export const refreshAccessToken = async (req: Request, res: Response) => {
-    // const token = req?.cookies?.refreshToken;
     const token = req.body?.refreshToken;
     if (!token) {
         responseAPI(res, {

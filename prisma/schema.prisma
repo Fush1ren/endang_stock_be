@@ -54,7 +54,7 @@ model User {
 
 model Store {
     id_store       Int   @id @default(autoincrement()) @db.Integer
-    name      String @db.VarChar(25)
+    name      String @db.VarChar(25) @unique
     createdAt DateTime @default(now()) @db.Timestamptz()
     updatedAt DateTime @updatedAt @db.Timestamptz()
 
@@ -69,7 +69,7 @@ model Store {
 
 model Unit {
     id_unit        Int   @id @default(autoincrement()) @db.Integer
-    name      String @db.VarChar(25)
+    name      String @db.VarChar(25) @unique
 
     createdAt DateTime @default(now()) @db.Timestamptz()
     updatedAt DateTime @updatedAt @db.Timestamptz()
@@ -80,7 +80,7 @@ model Unit {
 
 model Brand {
     id_brand        Int   @id @default(autoincrement()) @db.Integer
-    name      String @db.VarChar(30)
+    name      String @db.VarChar(30) @unique
     
     createdAt DateTime @default(now()) @db.Timestamptz()
     updatedAt DateTime @updatedAt @db.Timestamptz()
@@ -91,7 +91,7 @@ model Brand {
 
 model Category {
     id_category  Int   @id @default(autoincrement()) @db.Integer
-    name      String @db.VarChar(100)
+    name      String @db.VarChar(100) @unique
     
     createdAt DateTime @default(now()) @db.Timestamptz()
     updatedAt DateTime @updatedAt @db.Timestamptz()
@@ -102,7 +102,7 @@ model Category {
 
 model Product {
     id_product  Int   @id @default(autoincrement()) @db.Integer
-    name      String @db.VarChar(100)
+    name      String @db.VarChar(100) @unique
 
     code String @unique @db.VarChar(30)
     threshold Int @default(0) @db.Integer

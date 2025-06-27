@@ -2,7 +2,7 @@ import { Request, Response } from "express";
 import { getPage, responseAPI, responseAPIData } from "../../utils";
 import { prismaClient } from "../../config";
 import { BodyDeleteProductData, BodyUpdateProductUnit, GetProductUnitParams } from "../../../dto/product.dto";
-import { parseSort } from "../../utils/data.util";
+import { capitalizeWords, parseSort } from "../../utils/data.util";
 import { Prisma } from "@prisma/client";
 import { User } from "../../types";
 import { getUnitList } from "./unit.service";
@@ -29,7 +29,7 @@ export const createUnit = async (req: Request, res: Response) => {
         // check if unit already exists
         const existingUnit = await prismaClient.unit.findFirst({
             where: {
-                name: name.trim(),
+                name: capitalizeWords(name.trim().toLowerCase()),
             },
         });
 
@@ -43,7 +43,7 @@ export const createUnit = async (req: Request, res: Response) => {
 
         await prismaClient.unit.create({
             data: {
-                name,
+                name: capitalizeWords(name.trim().toLowerCase()),
             }
         });
         responseAPI(res, {
@@ -93,10 +93,25 @@ export const updateUnit = async (req: Request, res: Response) => {
                 id_unit: id,
             },
         });
+
         if (!existingUnit) {
             responseAPI(res, {
                 status: 404,
                 message: 'Unit not found!',
+            });
+            return;
+        }
+
+        const existingUnitName = await prismaClient.unit.findFirst({
+            where: {
+                name: capitalizeWords(body.name.trim().toLowerCase()),
+            },
+        });
+
+        if (existingUnitName && existingUnitName.id_unit !== id) {
+            responseAPI(res, {
+                status: 400,
+                message: 'Unit with this name already exists',
             });
             return;
         }
@@ -106,7 +121,7 @@ export const updateUnit = async (req: Request, res: Response) => {
                 id_unit: id,
             },
             data: {
-                name: body.name.trim(),
+                name: capitalizeWords(body.name.trim().toLowerCase()),
             }
         });
         

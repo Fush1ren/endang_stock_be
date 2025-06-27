@@ -8,7 +8,7 @@ const upload = multer();
 const userRouter = Router();
 
 userRouter.get('/', verifyToken, getAllUser);
-userRouter.get('/options', verifyToken, getOptionsUser); // Assuming this is for user options
+userRouter.get('/options', verifyToken, getOptionsUser);
 userRouter.get('/profile/:id', verifyToken, getUserProfile);
 userRouter.get('/:id', verifyToken, getUserById);
 userRouter.post('/', upload.single('photo'), verifyToken, createUser);

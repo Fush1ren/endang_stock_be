@@ -45,7 +45,6 @@ export async function notificationStockLinearLength() {
 
     for (let i = 0; i < storeStocks.length; i++) {
         const stock = storeStocks[i];
-        // const threshold = stock.product.threshold;
 
         if (stock.status === 'outOfStock') {
             if (!result.outOfStock) {
@@ -81,46 +80,10 @@ export async function notificationStockLinearLength() {
             });
             result.length += 1;
         }
-
-        // if (stock.quantity <= 0) {
-        //     if (!result.outOfStock) {
-        //         result.outOfStock = [];
-        //     }
-        //     result.outOfStock.push({
-        //         productName: stock.product.name,
-        //         location: stock.store.name,
-        //     });
-        //     result.data.push({
-        //         status: stock.status,
-        //         product: {
-        //             name: stock.product.name,
-        //         },
-        //         location: stock.store.name,
-        //     });
-        //     result.length += 1;
-        // } else if (stock.quantity <= threshold) {
-        //     if (!result.lowStock) {
-        //         result.lowStock = [];
-        //     }
-        //     result.lowStock.push({
-        //         productName: stock.product.name,
-        //         quantity: stock.quantity,
-        //         location: stock.store.name,
-        //     });
-        //     result.data.push({
-        //         status: stock.status,
-        //         product: {
-        //             name: stock.product.name,
-        //         },
-        //         location: stock.store.name,
-        //     });
-        //     result.length += 1;
-        // }
     }
 
     for (let i = 0; i < warehouseStocks.length; i++) {
         const stock = warehouseStocks[i];
-        // const threshold = stock.product.threshold;
 
         if (stock.status === 'outOfStock') {
             if (!result.outOfStock) {
@@ -157,40 +120,6 @@ export async function notificationStockLinearLength() {
             result.length += 1;
         }
 
-        // if (stock.quantity <= 0) {
-        //     if (!result.outOfStock) {
-        //         result.outOfStock = [];
-        //     }
-        //     result.outOfStock.push({
-        //         productName: stock.product.name,
-        //         location: "Gudang",
-        //     });
-        //     result.data.push({
-        //         status: stock.status,
-        //         product: {
-        //             name: stock.product.name,
-        //         },
-        //         location: "Gudang",
-        //     });
-        //     result.length += 1;
-        // } else if (stock.quantity <= threshold) {
-        //     if (!result.lowStock) {
-        //         result.lowStock = [];
-        //     }
-        //     result.lowStock.push({
-        //         productName: stock.product.name,
-        //         quantity: stock.quantity,
-        //         location: "Gudang",
-        //     });
-        //     result.data.push({
-        //         status: stock.status,
-        //         product: {
-        //             name: stock.product.name,
-        //         },
-        //         location: "Gudang",
-        //     });
-        //     result.length += 1;
-        // }
     }
     return result;
 }

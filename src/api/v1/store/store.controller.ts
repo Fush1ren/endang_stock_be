@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
 import { prismaClient } from "../../config";
 import { getPage, responseAPI, responseAPIData, responseAPITable } from "../../utils";
-import { parseSort } from "../../utils/data.util";
+import { capitalizeWords, parseSort } from "../../utils/data.util";
 import { GetStoreParams } from "../../../dto/store.dto";
 import { Prisma } from "@prisma/client";
 
@@ -19,7 +19,7 @@ export const createStore = async (req: Request, res: Response) => {
 
         const existingStore = await prismaClient.store.findFirst({
             where: {
-                name: name,
+                name: capitalizeWords(name.trim().toLowerCase()),
             },
         });
 
@@ -33,7 +33,7 @@ export const createStore = async (req: Request, res: Response) => {
 
         await prismaClient.store.create({
             data: {
-                name: name,
+                name: capitalizeWords(name.trim().toLowerCase()),
             },
         });
 
@@ -251,11 +251,26 @@ export const updateStore = async (req: Request, res: Response) => {
             });
             return;
         }
+
+        // Check if the name already exists
+        const existingStoreName = await prismaClient.store.findFirst({
+            where: {
+                name: capitalizeWords(body.name.trim().toLowerCase()),
+            },
+        });
+
+        if (existingStoreName && existingStoreName.id_store !== id) {
+            responseAPI(res, {
+                status: 400,
+                message: "Store with this name already exists",
+            });
+            return;
+        }
         
         await prismaClient.store.update({
             where: { id_store: id },
             data: {
-                name: body.name.trim(),
+                name: capitalizeWords(body.name.trim().toLowerCase()),
             },
         }); // Respond with success message
 

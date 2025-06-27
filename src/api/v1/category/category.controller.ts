@@ -2,7 +2,7 @@ import { Request, Response } from "express";
 import { getPage, responseAPI, responseAPIData, responseAPITable } from "../../utils";
 import { prismaClient } from "../../config";
 import { QueryParams } from "../../dto";
-import { parseSort } from "../../utils/data.util";
+import { capitalizeWords, parseSort } from "../../utils/data.util";
 import { getCategoryList } from "./category.service";
 
 export const createCategory = async (req: Request, res: Response) => {
@@ -19,7 +19,7 @@ export const createCategory = async (req: Request, res: Response) => {
 
         const existingCategory = await prismaClient.category.findFirst({
             where: {
-                name: name,
+                name: capitalizeWords(name.trim().toLowerCase()),
             },
         });
 
@@ -118,6 +118,22 @@ export const updateCategory = async (req: Request, res: Response) => {
             return responseAPI(res, {
                 status: 404,
                 message: "Category not found",
+            });
+        }
+
+        const existingCategoryName = await prismaClient.category.findFirst({
+            where: {
+                name: capitalizeWords(body.name.trim().toLowerCase()),
+                id_category: {
+                    not: id, // Exclude the current category being updated
+                },
+            },
+        });
+
+        if (existingCategoryName) {
+            return responseAPI(res, {
+                status: 400,
+                message: "Category with this name already exists",
             });
         }
 

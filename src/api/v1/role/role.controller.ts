@@ -2,7 +2,7 @@ import { Request, Response } from "express";
 import { getPage, responseAPI, responseAPIData, responseAPITable } from "../../utils";
 import { prismaClient } from "../../config";
 import { QueryParams } from "../../dto";
-import { parseSort } from "../../utils/data.util";
+import { capitalizeWords, parseSort } from "../../utils/data.util";
 import { BodyCreateRole, BodyUpdateRole } from "../../types/user.type";
 
 export const createRole = async (req: Request, response: Response) => {
@@ -24,7 +24,7 @@ export const createRole = async (req: Request, response: Response) => {
 
         const existingRole = await prismaClient.role.findUnique({
             where: {
-                name: name,
+                name: capitalizeWords(name.trim().toLowerCase()),
             },
         });
 
@@ -39,7 +39,7 @@ export const createRole = async (req: Request, response: Response) => {
 
         await prismaClient.role.create({
             data: {
-                name: name,
+                name: capitalizeWords(name.trim().toLowerCase()),
                 permissions: permissions as object,
             },
         });
@@ -253,10 +253,24 @@ export const updateRole = async (req: Request, res: Response) => {
             return;
         }
 
+        const existingRoleName = await prismaClient.role.findUnique({
+            where: {
+                name: capitalizeWords(body.name.trim().toLowerCase()),
+            },
+        });
+
+        if (existingRoleName && existingRoleName.id_role !== id) {
+            responseAPI(res, {
+                status: 400,
+                message: "Role with this name already exists",
+            });
+            return;
+        }
+
         await prismaClient.role.update({
             where: { id_role: id },
             data: {
-                name: body.name.trim(),
+                name: capitalizeWords(body.name.trim().toLowerCase()),
                 permissions: body.permissions ? body.permissions as object : existingRole.permissions as object,
             },
         });

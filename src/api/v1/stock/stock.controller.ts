@@ -2141,15 +2141,6 @@ export const getAllStocksMutation = async (req: Request, res: Response) => {
             };
         }
 
-        // const filter = filterStockMutation(queryParams);
-
-        // if (filter && Object.keys(filter).length > 0) {
-        //     queryTable = {
-        //         ...queryTable,
-        //         where: filter,
-        //     };
-        // }
-
         if (queryParams.page || queryParams.limit) {
             const paramPage = queryParams.page ? Number(queryParams.page) : 1;
             const paramLimit = queryParams.limit ? Number(queryParams.limit) : 10;

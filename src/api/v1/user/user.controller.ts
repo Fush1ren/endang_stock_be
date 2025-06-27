@@ -95,7 +95,7 @@ export const createUser = async (req: Request, res: Response) => {
 
         const existingUser = await prismaClient.user.findUnique({
             where: {
-                username: body.username,
+                username: body.username?.toLowerCase(),
             },
         });
 
@@ -108,7 +108,7 @@ export const createUser = async (req: Request, res: Response) => {
 
         const existingEmail = await prismaClient.user.findUnique({
             where: {
-                email: body.email,
+                email: body.email?.toLowerCase(),
             },
         });
         
@@ -135,7 +135,7 @@ export const createUser = async (req: Request, res: Response) => {
 
         let avatarUrl: string | undefined = undefined;
         if (req.file) {
-            avatarUrl = await uploadToSupabaseStorage(req.file, body.username);
+            avatarUrl = await uploadToSupabaseStorage(req.file, body.username?.toLowerCase());
         }
 
         const hashed = await bcrypt.hash(body.password, 10)
@@ -143,8 +143,8 @@ export const createUser = async (req: Request, res: Response) => {
         await prismaClient.user.create({
             data: {
                 name: body.name,
-                username: body.username,
-                email: body.email,
+                username: body.username?.toLowerCase(),
+                email: body.email?.toLowerCase(),
                 password: hashed,
                 photo: avatarUrl || null,
                 roles: {
@@ -430,14 +430,6 @@ export const getUserById = async (req: Request, res: Response) => {
 
 export const updateUser = async (req: Request, res: Response) => {
     try {
-        // const userReq = (req as any).user as user;
-        // if (!userReq) {
-        //     responseAPI(res, {
-        //         status: 401,
-        //         message: 'Unauthorized',
-        //     });
-        //     return;
-        // };
 
         const id = Number(req.params.id);
         const body = req.body as BodyUpdateUser;
@@ -523,8 +515,8 @@ export const updateUser = async (req: Request, res: Response) => {
             where: { id_user: Number(id) },
             data: {
                 name: body.name,
-                username: body.username,
-                email: body.email,
+                username: body.username?.toLowerCase(),
+                email: body.email?.toLowerCase(),
                 password: body.password,
                 photo: avatarUrl || null,
                 roles: {

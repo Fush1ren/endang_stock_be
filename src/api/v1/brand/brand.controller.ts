@@ -3,7 +3,7 @@ import { getPage, responseAPI, responseAPIData, responseAPITable } from "../../u
 import { prismaClient } from "../../config";
 import { QueryParams } from "../../dto";
 import { BodyCreateBrand } from "../../../dto/brand.dto";
-import { parseSort } from "../../utils/data.util";
+import { capitalizeWords, parseSort } from "../../utils/data.util";
 import { getBrandList } from "./brand.service";
 
 export const createBrand = async (req: Request, res: Response) => {
@@ -19,7 +19,7 @@ export const createBrand = async (req: Request, res: Response) => {
 
         const existingBrand = await prismaClient.brand.findFirst({
             where: {
-                name: body.name.trim(),
+                name: capitalizeWords(body.name.trim().toLowerCase()),
             },
         });
 
@@ -32,7 +32,7 @@ export const createBrand = async (req: Request, res: Response) => {
 
         await prismaClient.brand.create({
             data: {
-                name: body.name.trim(),
+                name: capitalizeWords(body.name.trim().toLowerCase()),
             },
         });
 
@@ -248,6 +248,22 @@ export const updateBrand = async (req: Request, res: Response) => {
             return responseAPI(res, {
                 status: 404,
                 message: 'Brand not found',
+            });
+        }
+
+        const existingBrandName = await prismaClient.brand.findFirst({
+            where: {
+                name: capitalizeWords(body.name.trim().toLowerCase()),
+                id_brand: {
+                    not: id, // Exclude the current brand being updated
+                },
+            },
+        });
+
+        if (existingBrandName) {
+            return responseAPI(res, {
+                status: 400,
+                message: 'Brand with this name already exists',
             });
         }
 

@@ -3,7 +3,7 @@ import { prismaClient } from "../../config";
 import { getPage, responseAPI, responseAPIData, responseAPITable } from "../../utils";
 import { QueryParams } from "../../dto";
 import { BodyCreateProduct, BodyDeleteProductData, BodyUpdateProduct } from "../../../dto/product.dto";
-import { parseSort } from "../../utils/data.util";
+import { capitalizeWords, parseSort } from "../../utils/data.util";
 import { productById, productList } from "../../dto/product.dto";
 import { ErrorResponse } from "../../dto/data.dto";
 import { notificationStockLinearLength } from "../stock/stock.service";
@@ -148,13 +148,13 @@ export const createProduct = async (req: Request, res: Response) => {
             return;
         }
 
-        const existingProduct = await prismaClient.product.findUnique({
+        const existingProductCode = await prismaClient.product.findUnique({
             where: {
                 code: body.code.trim(),
             },
         });
 
-        if (existingProduct) {
+        if (existingProductCode) {
             responseAPI(res, {
                 status: 400,
                 message: 'Product with this code already exists',
@@ -162,9 +162,23 @@ export const createProduct = async (req: Request, res: Response) => {
             return;
         }
 
+        const existingProductName = await prismaClient.product.findUnique({
+            where: {
+                name: capitalizeWords(body.name.trim().toLowerCase()),
+            },
+        });
+
+        if (existingProductName) {
+            responseAPI(res, {
+                status: 400,
+                message: 'Product with this name already exists',
+            });
+            return;
+        }
+
         await prismaClient.product.create({
             data: {
-                name: body.name.trim(),
+                name: capitalizeWords(body.name.trim().toLowerCase()),
                 code: body.code.trim(),
                 description: body.description ? body.description.trim() : null,
                 category: {
@@ -271,13 +285,27 @@ export const updateProduct = async (req: Request, res: Response) => {
             });
             return;
         }
+
+        const existingProductName = await prismaClient.product.findUnique({
+            where: {
+                name: capitalizeWords(body.name.trim().toLowerCase()),
+            },
+        });
+
+        if (existingProductName && existingProductName.id_product !== id) {
+            responseAPI(res, {
+                status: 400,
+                message: 'Product with this name already exists',
+            });
+            return;
+        }
         
         await prismaClient.product.update({
             where: {
                 id_product: id,
             },
             data: {
-                name: body.name.trim(),
+                name: capitalizeWords(body.name.trim().toLowerCase()),
                 code: body.code.trim(),
                 description: body.description,
                 category: body.categoryId ? {

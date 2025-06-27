@@ -26,7 +26,6 @@ export const verifyToken = (req: UserRequest, res: Response, next: NextFunction)
       })
       return;
     }
-    console.error("Invalid refresh token", error);
     responseAPI(res, {
       status: 403,
       message: 'Invalid token',
