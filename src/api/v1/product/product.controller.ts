@@ -5,7 +5,7 @@ import { QueryParams } from "../../dto";
 import { BodyCreateProduct, BodyDeleteProductData, BodyUpdateProduct } from "../../../dto/product.dto";
 import { capitalizeWords, parseSort } from "../../utils/data.util";
 import { productById, productList } from "../../dto/product.dto";
-import { ErrorResponse } from "../../dto/data.dto";
+// import { ErrorResponse } from "../../dto/data.dto";
 import { notificationStockLinearLength } from "../stock/stock.service";
 import { emitStockNotificationLength } from "../../socket/socketInstance";
 import { Prisma, StatusProduct } from "@prisma/client";
@@ -23,69 +23,69 @@ const setStatus = (quantity: number, threshold: number): StatusProduct => {
     return 'available';
 }
 
-const checkDataProduct = async (id: number[]): Promise<ErrorResponse | undefined> => {
-    const existingStockInDetail = await prismaClient.stockInDetail.findMany({
-        where: {
-            id_product: {
-                in: id,
-            }
-        },
-        select: {
-            id_product: true,
-        }
-    });
+// const checkDataProduct = async (id: number[]): Promise<ErrorResponse | undefined> => {
+//     const existingStockInDetail = await prismaClient.stockInDetail.findMany({
+//         where: {
+//             id_product: {
+//                 in: id,
+//             }
+//         },
+//         select: {
+//             id_product: true,
+//         }
+//     });
 
-    const existingStockOutDetail = await prismaClient.stockOutDetail.findMany({
-        where: {
-            id_product: {
-                in: id,
-            }
-        },
-        select: {
-            id_product: true,
-        }
-    });
+//     const existingStockOutDetail = await prismaClient.stockOutDetail.findMany({
+//         where: {
+//             id_product: {
+//                 in: id,
+//             }
+//         },
+//         select: {
+//             id_product: true,
+//         }
+//     });
 
-    const existingStockMutationDetail = await prismaClient.stockMutationDetail.findMany({
-        where: {
-            id_product: {
-                in: id,
-            }
-        },
-        select: {
-            id_product: true,
-        }
-    });
+//     const existingStockMutationDetail = await prismaClient.stockMutationDetail.findMany({
+//         where: {
+//             id_product: {
+//                 in: id,
+//             }
+//         },
+//         select: {
+//             id_product: true,
+//         }
+//     });
 
-    const existingStoreStock = await prismaClient.storeStock.findMany({
-        where: {
-            id_product: {
-                in: id,
-            }
-        },
-        select: {
-            id_product: true,
-        }
-    });
+//     const existingStoreStock = await prismaClient.storeStock.findMany({
+//         where: {
+//             id_product: {
+//                 in: id,
+//             }
+//         },
+//         select: {
+//             id_product: true,
+//         }
+//     });
 
-    const existingWarehouseStock = await prismaClient.wareHouseStock.findMany({
-        where: {
-            id_product: {
-                in: id,
-            }
-        },
-        select: {
-            id_product: true,
-        }
-    });
-    if (existingStockInDetail.length > 0 || existingStockOutDetail.length > 0 || existingStoreStock.length > 0 || existingWarehouseStock.length > 0 || existingStockMutationDetail.length > 0) {
-        return {
-            status: 400,
-            message: 'Cannot delete product that is used in stock transactions',
-        };
-    }
-    return undefined;
-}
+//     const existingWarehouseStock = await prismaClient.wareHouseStock.findMany({
+//         where: {
+//             id_product: {
+//                 in: id,
+//             }
+//         },
+//         select: {
+//             id_product: true,
+//         }
+//     });
+//     if (existingStockInDetail.length > 0 || existingStockOutDetail.length > 0 || existingStoreStock.length > 0 || existingWarehouseStock.length > 0 || existingStockMutationDetail.length > 0) {
+//         return {
+//             status: 400,
+//             message: 'Cannot delete product that is used in stock transactions',
+//         };
+//     }
+//     return undefined;
+// }
 
 export const createProduct = async (req: Request, res: Response) => {
     try {
@@ -374,23 +374,128 @@ export const deleteProduct = async (req: Request, res: Response) => {
             return;
         }
 
-        const errorResponse = await checkDataProduct(body.id);
-        if (errorResponse) {
-            responseAPI(res, {
-                status: errorResponse.status,
-                message: errorResponse.message,
-            });
-            return;
-        }
-            
+        // const errorResponse = await checkDataProduct(body.id);
+        // if (errorResponse) {
+        //     responseAPI(res, {
+        //         status: errorResponse.status,
+        //         message: errorResponse.message,
+        //     });
+        //     return;
+        // }
 
-        await prismaClient.product.deleteMany({
-            where: {
-                id_product: {
-                    in: body.id,
+        // await prismaClient.product.deleteMany({
+        //     where: {
+        //         id_product: {
+        //             in: body.id,
+        //         }
+        //     }
+        // });
+
+        await prismaClient.$transaction(async (prisma) => {
+            for (const productId of body.id) {
+                // Hapus dari store stock & warehouse stock
+                await prisma.storeStock.deleteMany({
+                    where: { id_product: productId },
+                });
+
+                await prisma.wareHouseStock.deleteMany({
+                    where: { id_product: productId },
+                });
+
+                // ---- STOCK IN ----
+                const stockInDetails = await prisma.stockInDetail.findMany({
+                    where: { id_product: productId },
+                    select: { id_stock_in: true },
+                });
+
+                const stockIns = await prisma.stockIn.findMany({
+                    where: {
+                        id_stock_in: { in: stockInDetails.map((d) => d.id_stock_in) },
+                    },
+                    select: {
+                        id_stock_in: true,
+                        StockInDetail: { select: { id_product: true } },
+                    },
+                });
+
+                // Hapus stockIn jika hanya punya 1 detail
+                for (const stock of stockIns) {
+                    if (stock.StockInDetail.length === 1) {
+                        await prisma.stockIn.delete({
+                        where: { id_stock_in: stock.id_stock_in },
+                        });
+                    }
                 }
+
+                await prisma.stockInDetail.deleteMany({
+                    where: { id_product: productId },
+                });
+
+                // ---- STOCK OUT ----
+                const stockOutDetails = await prisma.stockOutDetail.findMany({
+                    where: { id_product: productId },
+                    select: { id_stock_out: true },
+                });
+
+                const stockOuts = await prisma.stockOut.findMany({
+                    where: {
+                        id_stock_out: { in: stockOutDetails.map((d) => d.id_stock_out) },
+                    },
+                    select: {
+                        id_stock_out: true,
+                        StockOutDetail: { select: { id_product: true } },
+                    },
+                });
+
+                for (const stock of stockOuts) {
+                    if (stock.StockOutDetail.length === 1) {
+                        await prisma.stockOut.delete({
+                        where: { id_stock_out: stock.id_stock_out },
+                        });
+                    }
+                }
+
+                await prisma.stockOutDetail.deleteMany({
+                    where: { id_product: productId },
+                });
+
+                // ---- STOCK MUTATION ----
+                const stockMutationDetails = await prisma.stockMutationDetail.findMany({
+                    where: { id_product: productId },
+                    select: { id_stock_mutation: true },
+                });
+
+                const stockMutations = await prisma.stockMutation.findMany({
+                    where: {
+                        id_stock_mutation: {
+                        in: stockMutationDetails.map((d) => d.id_stock_mutation),
+                        },
+                    },
+                    select: {
+                        id_stock_mutation: true,
+                        StockMutationDetail: { select: { id_product: true } },
+                    },
+                });
+
+                for (const stock of stockMutations) {
+                    if (stock.StockMutationDetail.length === 1) {
+                        await prisma.stockMutation.delete({
+                        where: { id_stock_mutation: stock.id_stock_mutation },
+                        });
+                    }
+                }
+
+                await prisma.stockMutationDetail.deleteMany({
+                    where: { id_product: productId },
+                });
+
+                // ---- DELETE PRODUCT ----
+                await prisma.product.delete({
+                    where: { id_product: productId },
+                });
             }
         });
+
         responseAPI(res, {
             status: 200,
             message: 'Product deleted successfully',

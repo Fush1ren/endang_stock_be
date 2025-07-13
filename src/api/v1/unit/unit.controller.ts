@@ -9,14 +9,6 @@ import { getUnitList } from "./unit.service";
 
 export const createUnit = async (req: Request, res: Response) => {
     try {
-        const userReq = (req as any).user as User;
-        if (!userReq) {
-            responseAPI(res, {
-                status: 401,
-                message: 'Unauthorized',
-            });
-            return;
-        };
 
         const { name } = req.body;
         if (!name) {
@@ -328,7 +320,7 @@ export const getUnitDropdown = async (_req: Request, res: Response) => {
         const data = units.map(unit => ({
             id: unit.id_unit,
             name: unit.name,
-        }));
+        })).sort((a, b) => a.name.localeCompare(b.name));
 
         responseAPIData(res, {
             status: 200,

@@ -11,7 +11,7 @@ productRoute.get('/dropdown', verifyToken, getProductDropdown);
 productRoute.get('/:id', verifyToken, getProductById);
 productRoute.post('/', verifyToken, createProduct);
 productRoute.patch('/:id/threshold', verifyToken, updateProductThreshold);
-productRoute.put('/:id', verifyToken, updateProduct); // Assuming updateProduct is similar to createProduct
+productRoute.put('/:id', verifyToken, updateProduct);
 productRoute.delete('/', verifyToken, deleteProduct);
 
 export default productRoute;

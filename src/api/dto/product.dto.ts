@@ -10,16 +10,16 @@ export const productList = (data: IProduct[]): IProductList[] => {
         threshold: item.threshold,
         updatedAt: item.updatedAt,
         category: {
-            id: item.category.id_category,
-            name: item.category.name
+            id: item?.category?.id_category,
+            name: item?.category?.name
         },
         unit: {
-            id: item.unit.id_unit,
-            name: item.unit.name
+            id: item?.unit?.id_unit,
+            name: item?.unit?.name
         },
         brand: {
-            id: item.brand.id_brand,
-            name: item.brand.name
+            id: item?.brand?.id_brand,
+            name: item?.brand?.name
         },
     }));
 };

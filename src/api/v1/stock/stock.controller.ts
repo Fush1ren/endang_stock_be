@@ -364,18 +364,48 @@ export const verifyStockIn = async (req: Request, res: Response) => {
     }
 }
 
+// export const getStockInNextCode = async (_req: Request, res: Response) => {
+//     try {
+//         const lastStockIn = await prismaClient.stockIn.findFirst({
+//             orderBy: {
+//                 createdAt: 'desc',
+//             },
+//             select: {
+//                 id_stock_in: true,
+//             },
+//         });
+
+//         const nextCode = lastStockIn ? lastStockIn.id_stock_in + 1 : 1;
+
+//         responseAPIData(res, {
+//             status: 200,
+//             message: "Next stock in code retrieved successfully",
+//             data: { nextCode },
+//         });
+//     } catch (error) {
+//         responseAPI(res, {
+//             status: 500,
+//             message: "Internal server error",
+//         });
+//     }
+// }
+
 export const getStockInNextCode = async (_req: Request, res: Response) => {
     try {
-        const lastStockIn = await prismaClient.stockIn.findFirst({
+        const stockIn = await prismaClient.stockIn.findMany({
             orderBy: {
-                createdAt: 'desc',
+                id_stock_in: 'asc',
             },
             select: {
                 id_stock_in: true,
             },
         });
 
-        const nextCode = lastStockIn ? lastStockIn.id_stock_in + 1 : 1;
+        const length = stockIn.length;
+
+        const lastStockIn = length > 0 ? stockIn[length - 1] : null;
+
+        const nextCode = lastStockIn ? lastStockIn.id_stock_in + 1  : 1;
 
         responseAPIData(res, {
             status: 200,
@@ -576,15 +606,16 @@ export const verifyStockOut = async (req: Request, res: Response) => {
 
 export const getStockOutNextCode = async (_req: Request, res: Response) => {
     try {
-        const lastStockOut = await prismaClient.stockOut.findFirst({
+        const stockOut = await prismaClient.stockOut.findMany({
             orderBy: {
-                createdAt: 'desc',
+                id_stock_out: 'asc',
             },
             select: {
                 id_stock_out: true,
             },
         });
-
+        const length = stockOut.length;
+        const lastStockOut = stockOut ? stockOut[length - 1] : null;
         const nextCode = lastStockOut ? lastStockOut.id_stock_out + 1 : 1;
 
         responseAPIData(res, {
@@ -1081,15 +1112,17 @@ export const deleteStockMutation = async (req: Request, res: Response) => {
 
 export const getStockMutationNextCode = async (_req: Request, res: Response) => {
     try {
-        const lastStockMutation = await prismaClient.stockMutation.findFirst({
+        const stockMutation = await prismaClient.stockMutation.findMany({
             orderBy: {
-                createdAt: 'desc',
+                id_stock_mutation: 'asc',
             },
             select: {
                 id_stock_mutation: true,
             },
         });
 
+        const length = stockMutation.length;
+        const lastStockMutation = stockMutation ? stockMutation[length - 1] : null;
         const nextCode = lastStockMutation ? lastStockMutation.id_stock_mutation + 1 : 1;
 
         responseAPIData(res, {
@@ -2546,7 +2579,7 @@ export const getWarehouseStockDropdown = async (_req: Request, res: Response) =>
         });
 
         const dropdownData = stocks.map(stock => ({
-            id: stock.id_warehouse_stock,
+            id: stock.product?.id_product,
             name: `${stock.product.name}`,
             quantity: stock.quantity,
         }));

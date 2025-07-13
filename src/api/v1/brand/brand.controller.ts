@@ -167,7 +167,7 @@ export const getBrandDropdown = async (_req: Request, res: Response) => {
         const data = brands.map(brand => ({
             id: brand.id_brand,
             name: brand.name,
-        }));
+        })).sort((a, b) => a.name.localeCompare(b.name));
 
         responseAPIData(res, {
             status: 200,

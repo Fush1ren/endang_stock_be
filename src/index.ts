@@ -5,11 +5,9 @@ import cors from "cors";
 import http from 'http';
 import { Server } from 'socket.io';
 import { registerSocket } from './api/socket/socketInstance';
-// import cookieParser from 'cookie-parser';
 
 const app = express();
 
-// app.use(cookieParser());
 app.use(express.json());
 
 const server = http.createServer(app);

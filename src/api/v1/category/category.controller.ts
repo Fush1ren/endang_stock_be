@@ -274,7 +274,7 @@ export const getCategoryDropdown = async (_req: Request, res: Response) => {
         const data = categories.map(category => ({
             id: category.id_category,
             name: category.name,
-        }));
+        })).sort((a, b) => a.name.localeCompare(b.name));
 
         responseAPIData(res, {
             status: 200,

@@ -63,7 +63,7 @@ export const getAllRole = async (req: Request, response: Response) => {
 
     let where: any = {};
 
-    // 🔍 Search by role name
+    // Search by role name
     if (search) {
       where.name = {
         contains: search,
@@ -123,7 +123,7 @@ export const getAllRole = async (req: Request, response: Response) => {
       },
     };
 
-    // 🔃 Sorting
+    // Sorting
     const orderBy = parseSort({
       sortBy: queryParams.sortBy,
       sortOrder: queryParams.sortOrder,
@@ -132,7 +132,7 @@ export const getAllRole = async (req: Request, response: Response) => {
       queryTable.orderBy = orderBy;
     }
 
-    // 📄 Pagination
+    // Pagination
     if (queryParams.page || queryParams.limit) {
       const paramPage = queryParams.page ? Number(queryParams.page) : 1;
       const paramLimit = queryParams.limit ? Number(queryParams.limit) : 10;
@@ -141,7 +141,7 @@ export const getAllRole = async (req: Request, response: Response) => {
       queryTable.take = page.take;
     }
 
-    // 📥 Fetch data
+    // Fetch data
     const roles = await prismaClient.role.findMany(queryTable);
     const totalRecords = await prismaClient.role.count({ where });
 
@@ -299,7 +299,7 @@ export const getRoleDropdown = async (_req: Request, res: Response) => {
         const data = roles.map(role => ({
             id: role.id_role,
             name: role.name,
-        }));
+        })).sort((a, b) => a.name.localeCompare(b.name));
 
         responseAPIData(res, {
             status: 200,

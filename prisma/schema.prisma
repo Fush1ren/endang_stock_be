@@ -138,7 +138,7 @@ model StoreStock {
     id_store Int @db.Integer
 
     store Store @relation(fields: [id_store], references: [id_store], onDelete: Cascade)
-    product Product @relation(fields: [id_product], references: [id_product])
+    product Product @relation(fields: [id_product], references: [id_product], onDelete: Cascade)
 
     @@unique([id_store, id_product])
     @@map("store_stock")
@@ -153,7 +153,7 @@ model WareHouseStock {
 
     id_product Int @db.Integer
 
-    product Product @relation(fields: [id_product], references: [id_product])
+    product Product @relation(fields: [id_product], references: [id_product], onDelete: Cascade)
 
     @@unique([id_product])
     @@map("warehouse_stock")
@@ -187,7 +187,7 @@ model StockInDetail {
     id_product Int @db.Integer
 
     stockIn StockIn @relation(fields: [id_stock_in], references: [id_stock_in], onDelete: Cascade)
-    product Product @relation(fields: [id_product], references: [id_product])
+    product Product @relation(fields: [id_product], references: [id_product], onDelete: Cascade)
 
     @@map("stock_in_detail")
 }
@@ -219,7 +219,7 @@ model StockOutDetail {
     id_product Int @db.Integer
 
     stockOut StockOut @relation(fields: [id_stock_out], references: [id_stock_out], onDelete: Cascade)
-    product Product @relation(fields: [id_product], references: [id_product])
+    product Product @relation(fields: [id_product], references: [id_product], onDelete: Cascade)
 
     @@map("stock_out_detail")
 }
@@ -255,7 +255,7 @@ model StockMutationDetail {
     id_product Int @db.Integer
 
     stockMutation StockMutation @relation(fields: [id_stock_mutation], references: [id_stock_mutation], onDelete: Cascade)
-    product Product @relation(fields: [id_product], references: [id_product])
+    product Product @relation(fields: [id_product], references: [id_product], onDelete: Cascade)
 
     @@map("stock_mutation_detail")
 }

@@ -7,7 +7,7 @@ const categoryRoute = Router();
 categoryRoute.get('/', verifyToken, getAllCategory);
 categoryRoute.get('/dropdown', verifyToken, getCategoryDropdown);
 categoryRoute.post('/', verifyToken, createCategory);
-categoryRoute.put('/:id', verifyToken, updateCategory); // Assuming updateCategory is similar to createCategory
-categoryRoute.delete('/', verifyToken, deleteCategory); // Assuming deleteCategory is similar to updateCategory
+categoryRoute.put('/:id', verifyToken, updateCategory);
+categoryRoute.delete('/', verifyToken, deleteCategory);
 
 export default categoryRoute;
