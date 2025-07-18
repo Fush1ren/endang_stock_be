@@ -782,7 +782,7 @@ export const getProductDropdown = async (_req: Request, res: Response) => {
         const data = products.map(product => ({
             id: product.id_product,
             name: product.name,
-        }));
+        })).sort((a, b) => a.name.localeCompare(b.name));
 
         responseAPIData(res, {
             status: 200,

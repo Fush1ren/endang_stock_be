@@ -6,13 +6,13 @@ let io: Server;
 
 export function registerSocket(server: Server) {
   io = server;
-  io.on("connection", async (socket) => {
+  io.on("connection", async (_socket) => {
     const notification = await notificationStockLinearLength() as StockNotification;
     emitStockNotificationLength(notification);
 
-    socket.on('disconnect', () => {
-      console.log('user disconnected');
-    });
+    // socket.on('disconnect', () => {
+    //   console.log('user disconnected');
+    // });
   });
 }
 

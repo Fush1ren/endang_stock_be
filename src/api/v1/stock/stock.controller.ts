@@ -1529,9 +1529,8 @@ export const getAllStocksIn = async (req: Request, res: Response) => {
     try {
         const queryParams = req.query as GetStockInQueryParams;
         const search = queryParams.search?.toString().trim();
-        
         let where: any = {};
-
+        
         if (search) {
             where.OR = [
                 {
@@ -1627,6 +1626,14 @@ export const getAllStocksIn = async (req: Request, res: Response) => {
             where,
         } as IQuery;
 
+        if (queryParams.page || queryParams.limit) {
+            const paramPage = queryParams.page ? Number(queryParams.page) : 1;
+            const paramLimit = queryParams.limit ? Number(queryParams.limit) : 10;
+            const page = getPage(paramPage,paramLimit);
+            queryTable.skip = page.skip;
+            queryTable.take = page.take;
+        }
+
         const orderBy = parseSort({
             sortBy: queryParams.sortBy,
             sortOrder: queryParams.sortOrder,
@@ -1647,18 +1654,6 @@ export const getAllStocksIn = async (req: Request, res: Response) => {
         //         where: filter,
         //     };
         // }
-
-        if (queryParams.page || queryParams.limit) {
-            const paramPage = queryParams.page ? Number(queryParams.page) : 1;
-            const paramLimit = queryParams.limit ? Number(queryParams.limit) : 10;
-            const page = getPage(paramPage,paramLimit);
-            queryTable = {
-                ...queryTable,
-                skip: page.skip,
-                take: page.take,
-            }
-        }
-
         const sortProduct = {} as {
             product: {
                 name?: 'asc' | 'desc'
@@ -1709,6 +1704,8 @@ export const getAllStocksIn = async (req: Request, res: Response) => {
                 }
             },
             orderBy: queryTable.orderBy,
+            skip: queryTable.skip,
+            take: queryTable.take,
         });
         
         const totalRecords = await prismaClient.stockIn.count({
@@ -1891,11 +1888,8 @@ export const getAllStocksOut = async (req: Request, res: Response) => {
             const paramPage = queryParams.page ? Number(queryParams.page) : 1;
             const paramLimit = queryParams.limit ? Number(queryParams.limit) : 10;
             const page = getPage(paramPage,paramLimit);
-            queryTable = {
-                ...queryTable,
-                skip: page.skip,
-                take: page.take,
-            }
+            queryTable.skip = page.skip;
+            queryTable.take = page.take;
         }
 
         const sortProduct = {} as {
@@ -1948,6 +1942,8 @@ export const getAllStocksOut = async (req: Request, res: Response) => {
                 }
             },
             orderBy: queryTable.orderBy,
+            skip: queryTable.skip,
+            take: queryTable.take,
         });
 
         const totalRecords = await prismaClient.stockOut.count({
@@ -2178,11 +2174,8 @@ export const getAllStocksMutation = async (req: Request, res: Response) => {
             const paramPage = queryParams.page ? Number(queryParams.page) : 1;
             const paramLimit = queryParams.limit ? Number(queryParams.limit) : 10;
             const page = getPage(paramPage,paramLimit);
-            queryTable = {
-                ...queryTable,
-                skip: page.skip,
-                take: page.take,
-            }
+            queryTable.skip = page.skip;
+            queryTable.take = page.take;
         }
 
         const sortProduct = {} as {
@@ -2241,6 +2234,8 @@ export const getAllStocksMutation = async (req: Request, res: Response) => {
                 }
             },
             orderBy: queryTable.orderBy,
+            skip: queryTable.skip,
+            take: queryTable.take,
         });
         const totalRecords = await prismaClient.stockMutation.count({
             where: queryTable.where,
@@ -2582,7 +2577,7 @@ export const getWarehouseStockDropdown = async (_req: Request, res: Response) =>
             id: stock.product?.id_product,
             name: `${stock.product.name}`,
             quantity: stock.quantity,
-        }));
+        })).sort((a, b) => a.name.localeCompare(b.name));
 
         responseAPIData(res, {
             status: 200,
