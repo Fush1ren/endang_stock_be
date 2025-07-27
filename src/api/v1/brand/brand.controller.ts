@@ -207,6 +207,24 @@ export const deleteBrand = async (req: Request, res: Response) => {
             });
         }
 
+        // Check if brand is used in products
+        const productsUsingBrand = await prismaClient.product.findMany({
+            where: {
+                brand: {
+                    id_brand: {
+                        in: body.id,
+                    },
+                },
+            },
+        });
+
+        if (productsUsingBrand.length > 0) {
+            return responseAPI(res, {
+                status: 400,
+                message: 'Tidak dapat menghapus brand yang telah digunakan produk',
+            });
+        }
+
         await prismaClient.brand.deleteMany({
             where: {
                 id_brand: {

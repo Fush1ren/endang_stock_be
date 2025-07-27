@@ -3024,11 +3024,16 @@ export const getStockInReport = async (req: Request, res: Response) => {
             })
         };
 
-        const start = new Date(`${queryParams?.year}-${queryParams.month}-01`);
-        const end = new Date(start);
+        let start = new Date(`${queryParams?.year}-${queryParams?.month}-01`);
+        let end = new Date(start);
         end.setMonth(end.getMonth() + 1);
         end.setDate(0); // Set to last day of the month
 
+        if (queryParams?.date) {
+            start = new Date(`${queryParams?.year}-${queryParams?.month}-${queryParams?.date}`);
+            end = new Date(start);
+            end.setUTCHours(23, 59, 59, 999); // Set to end of the day
+        }
         const stockInReport = await prismaClient.stockIn.findMany({
             where: {
                 status: 'completed',
@@ -3123,10 +3128,16 @@ export const getStockOutReport = async (req: Request, res: Response) => {
             })
         };
 
-        const start = new Date(`${queryParams?.year}-${queryParams.month}-01`);
-        const end = new Date(start);
+        let start = new Date(`${queryParams?.year}-${queryParams.month}-01`);
+        let end = new Date(start);
         end.setMonth(end.getMonth() + 1);
         end.setDate(0); // Set to last day of the month
+
+         if (queryParams?.date) {
+            start = new Date(`${queryParams?.year}-${queryParams?.month}-${queryParams?.date}`);
+            end = new Date(start);
+            end.setUTCHours(23, 59, 59, 999); // Set to end of the day
+        }
 
         const stockOutReport = await prismaClient.stockOut.findMany({
             where: {
@@ -3222,10 +3233,16 @@ export const getStockMutationReport = async (req: Request, res: Response) => {
             })
         };
 
-        const start = new Date(`${queryParams?.year}-${queryParams.month}-01`);
-        const end = new Date(start);
+        let start = new Date(`${queryParams?.year}-${queryParams.month}-01`);
+        let end = new Date(start);
         end.setMonth(end.getMonth() + 1);
         end.setDate(0); // Set to last day of the month
+
+        if (queryParams?.date) {
+            start = new Date(`${queryParams?.year}-${queryParams?.month}-${queryParams?.date}`);
+            end = new Date(start);
+            end.setUTCHours(23, 59, 59, 999); // Set to end of the day
+        }
 
         const stockMutationReport = await prismaClient.stockMutation.findMany({
             where: {

@@ -74,6 +74,24 @@ export const deleteCategory = async (req: Request, res: Response) => {
             });
         }
 
+        // check if category is used in products
+        const productsUsingCategory = await prismaClient.product.findMany({
+            where: {
+                category: {
+                    id_category: {
+                        in: id.map(item => Number(item)),
+                    },
+                },
+            },
+        });
+
+        if (productsUsingCategory.length > 0) {
+            return responseAPI(res, {
+                status: 400,
+                message: "Tidak dapat menghapus kategori yang telah digunakan produk",
+            });
+        }
+
         await Promise.all(
             id.map(categoryId => 
                 prismaClient.category.delete({

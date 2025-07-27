@@ -163,6 +163,24 @@ export const deleteUnit = async (req: Request, res: Response) => {
             return;
         }
 
+        // check if unit is used in products
+        const usedInProducts = await prismaClient.product.findMany({
+            where: {
+                unit: {
+                    id_unit: {
+                        in: unitIds,
+                    },
+                },
+            },
+        });
+        if (usedInProducts.length > 0) {
+            responseAPI(res, {
+                status: 400,
+                message: 'Tidak dapat menghapus unit yang telah digunakan produk',
+            });
+            return;
+        }
+
         await Promise.all(
             body.id.map(unit => prismaClient.unit.delete({
                 where: {
