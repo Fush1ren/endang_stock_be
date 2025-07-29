@@ -3013,34 +3013,51 @@ export const getStockInReport = async (req: Request, res: Response) => {
     try {
         const queryParams = req.query as QueryParams;
 
-        if (!queryParams.month || !queryParams.year) {
-            return responseAPIData(res, {
-                status: 200,
-                message: 'Stock In report retrieved successfully',
-                data: {
-                    totalRecords: 0,
-                    data: [],
-                },
-            })
-        };
+        let where: any = {};
 
-        let start = new Date(`${queryParams?.year}-${queryParams?.month}-01`);
-        let end = new Date(start);
-        end.setMonth(end.getMonth() + 1);
-        end.setDate(0); // Set to last day of the month
-
-        if (queryParams?.date) {
-            start = new Date(`${queryParams?.year}-${queryParams?.month}-${queryParams?.date}`);
-            end = new Date(start);
-            end.setUTCHours(23, 59, 59, 999); // Set to end of the day
+        if (queryParams.date) {
+            const date = JSON.parse(queryParams.date as string) as string[];
+            const start = date[0] ? new Date(date[0]) : null;
+            const end = date[1] ? new Date(date[1]) : null;
+            if (start && end) {
+                where.date = {};
+                if (start) {
+                    start.setDate(start.getDate());
+                    start.setUTCHours(0, 0, 0, 0);
+                    where.date.gte = start;
+                }
+                if (end) {
+                    end.setDate(end.getDate());
+                    end.setUTCHours(23, 59, 59, 999);
+                    where.date.lte = end;
+                }
+            }
         }
+        // if (!queryParams.month || !queryParams.year) {
+        //     return responseAPIData(res, {
+        //         status: 200,
+        //         message: 'Stock In report retrieved successfully',
+        //         data: {
+        //             totalRecords: 0,
+        //             data: [],
+        //         },
+        //     })
+        // };
+
+        // let start = new Date(`${queryParams?.year}-${queryParams?.month}-01`);
+        // let end = new Date(start);
+        // end.setMonth(end.getMonth() + 1);
+        // end.setDate(0); // Set to last day of the month
+
+        // if (queryParams?.date) {
+        //     start = new Date(`${queryParams?.year}-${queryParams?.month}-${queryParams?.date}`);
+        //     end = new Date(start);
+        //     end.setUTCHours(23, 59, 59, 999); // Set to end of the day
+        // }
         const stockInReport = await prismaClient.stockIn.findMany({
             where: {
                 status: 'completed',
-                date: {
-                    gte: start,
-                    lte: end,
-                }
+                date: where?.date
             },
             include: {
                 StockInDetail: {
@@ -3117,35 +3134,52 @@ export const getStockOutReport = async (req: Request, res: Response) => {
     try {
         const queryParams = req.query as QueryParams;
 
-        if (!queryParams.month || !queryParams.year) {
-            return responseAPIData(res, {
-                status: 200,
-                message: 'Stock Out report retrieved successfully',
-                data: {
-                    totalRecords: 0,
-                    data: [],
-                },
-            })
-        };
+        let where: any = {};
 
-        let start = new Date(`${queryParams?.year}-${queryParams.month}-01`);
-        let end = new Date(start);
-        end.setMonth(end.getMonth() + 1);
-        end.setDate(0); // Set to last day of the month
-
-         if (queryParams?.date) {
-            start = new Date(`${queryParams?.year}-${queryParams?.month}-${queryParams?.date}`);
-            end = new Date(start);
-            end.setUTCHours(23, 59, 59, 999); // Set to end of the day
+        if (queryParams.date) {
+            const date = JSON.parse(queryParams.date as string) as string[];
+            const start = date[0] ? new Date(date[0]) : null;
+            const end = date[1] ? new Date(date[1]) : null;
+            if (start && end) {
+                where.date = {};
+                if (start) {
+                    start.setDate(start.getDate());
+                    start.setUTCHours(0, 0, 0, 0);
+                    where.date.gte = start;
+                }
+                if (end) {
+                    end.setDate(end.getDate());
+                    end.setUTCHours(23, 59, 59, 999);
+                    where.date.lte = end;
+                }
+            }
         }
+        // if (!queryParams.month || !queryParams.year) {
+        //     return responseAPIData(res, {
+        //         status: 200,
+        //         message: 'Stock Out report retrieved successfully',
+        //         data: {
+        //             totalRecords: 0,
+        //             data: [],
+        //         },
+        //     })
+        // };
+
+        // let start = new Date(`${queryParams?.year}-${queryParams.month}-01`);
+        // let end = new Date(start);
+        // end.setMonth(end.getMonth() + 1);
+        // end.setDate(0); // Set to last day of the month
+
+        //  if (queryParams?.date) {
+        //     start = new Date(`${queryParams?.year}-${queryParams?.month}-${queryParams?.date}`);
+        //     end = new Date(start);
+        //     end.setUTCHours(23, 59, 59, 999); // Set to end of the day
+        // }
 
         const stockOutReport = await prismaClient.stockOut.findMany({
             where: {
                 status: 'completed',
-                date: {
-                    gte: start,
-                    lte: end,
-                }
+                date: where?.date
             },
             include: {
                 StockOutDetail: {
@@ -3222,35 +3256,53 @@ export const getStockMutationReport = async (req: Request, res: Response) => {
     try {
         const queryParams = req.query as QueryParams;
 
-        if (!queryParams.month || !queryParams.year) {
-            return responseAPIData(res, {
-                status: 200,
-                message: 'Stock Mutation report retrieved successfully',
-                data: {
-                    totalRecords: 0,
-                    data: [],
-                },
-            })
-        };
+        let where: any = {};
 
-        let start = new Date(`${queryParams?.year}-${queryParams.month}-01`);
-        let end = new Date(start);
-        end.setMonth(end.getMonth() + 1);
-        end.setDate(0); // Set to last day of the month
-
-        if (queryParams?.date) {
-            start = new Date(`${queryParams?.year}-${queryParams?.month}-${queryParams?.date}`);
-            end = new Date(start);
-            end.setUTCHours(23, 59, 59, 999); // Set to end of the day
+        if (queryParams.date) {
+            const date = JSON.parse(queryParams.date as string) as string[];
+            const start = date[0] ? new Date(date[0]) : null;
+            const end = date[1] ? new Date(date[1]) : null;
+            if (start && end) {
+                where.date = {};
+                if (start) {
+                    start.setDate(start.getDate());
+                    start.setUTCHours(0, 0, 0, 0);
+                    where.date.gte = start;
+                }
+                if (end) {
+                    end.setDate(end.getDate());
+                    end.setUTCHours(23, 59, 59, 999);
+                    where.date.lte = end;
+                }
+            }
         }
+
+        // if (!queryParams.month || !queryParams.year) {
+        //     return responseAPIData(res, {
+        //         status: 200,
+        //         message: 'Stock Mutation report retrieved successfully',
+        //         data: {
+        //             totalRecords: 0,
+        //             data: [],
+        //         },
+        //     })
+        // };
+
+        // let start = new Date(`${queryParams?.year}-${queryParams.month}-01`);
+        // let end = new Date(start);
+        // end.setMonth(end.getMonth() + 1);
+        // end.setDate(0); // Set to last day of the month
+
+        // if (queryParams?.date) {
+        //     start = new Date(`${queryParams?.year}-${queryParams?.month}-${queryParams?.date}`);
+        //     end = new Date(start);
+        //     end.setUTCHours(23, 59, 59, 999); // Set to end of the day
+        // }
 
         const stockMutationReport = await prismaClient.stockMutation.findMany({
             where: {
                 status: 'completed',
-                date: {
-                    gte: start,
-                    lte: end,
-                }
+                date: where?.date
             },
             include: {
                 StockMutationDetail: {
