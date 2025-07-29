@@ -3032,6 +3032,15 @@ export const getStockInReport = async (req: Request, res: Response) => {
                     where.date.lte = end;
                 }
             }
+        } else {
+                return responseAPIData(res, {
+                status: 200,
+                message: 'Stock In report retrieved successfully',
+                data: {
+                    totalRecords: 0,
+                    data: [],
+                },
+            })
         }
         // if (!queryParams.month || !queryParams.year) {
         //     return responseAPIData(res, {
@@ -3153,6 +3162,15 @@ export const getStockOutReport = async (req: Request, res: Response) => {
                     where.date.lte = end;
                 }
             }
+        } else {
+                 return responseAPIData(res, {
+                status: 200,
+                message: 'Stock Out report retrieved successfully',
+                data: {
+                    totalRecords: 0,
+                    data: [],
+                },
+            })
         }
         // if (!queryParams.month || !queryParams.year) {
         //     return responseAPIData(res, {
@@ -3275,6 +3293,15 @@ export const getStockMutationReport = async (req: Request, res: Response) => {
                     where.date.lte = end;
                 }
             }
+        } else {
+                return responseAPIData(res, {
+                status: 200,
+                message: 'Stock Mutation report retrieved successfully',
+                data: {
+                    totalRecords: 0,
+                    data: [],
+                },
+            })
         }
 
         // if (!queryParams.month || !queryParams.year) {
